@@ -8,8 +8,8 @@ const { createServer } = require('http');
 const { Server } = require('socket.io');
 require('dotenv').config();
 
-// Import database connection
-const { sequelize } = require('./config/database');
+// Import database connection and models
+const { sequelize, testConnection, syncDatabase } = require('./models');
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -122,13 +122,13 @@ const PORT = process.env.PORT || 5000;
 async function startServer() {
   try {
     // Test database connection
-    await sequelize.authenticate();
-    console.log('✅ Koneksi database berhasil.');
+    await testConnection();
     
     // Sync database models
     if (process.env.NODE_ENV === 'development') {
-      await sequelize.sync({ alter: true });
-      console.log('✅ Database models synchronized.');
+      await syncDatabase({ alter: true });
+    } else {
+      await syncDatabase();
     }
     
     // Start server

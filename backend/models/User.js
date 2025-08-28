@@ -35,6 +35,10 @@ module.exports = (sequelize) => {
     },
     
     // Basic Information
+    fullName: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
     full_name: {
       type: DataTypes.STRING,
       allowNull: false
@@ -92,10 +96,20 @@ module.exports = (sequelize) => {
         len: [16, 16]
       }
     },
+    str: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Surat Tanda Registrasi Number'
+    },
     str_number: {
       type: DataTypes.STRING,
       allowNull: true,
       comment: 'Surat Tanda Registrasi Number'
+    },
+    sip: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Surat Izin Praktik Number'
     },
     sip_number: {
       type: DataTypes.STRING,
@@ -144,11 +158,23 @@ module.exports = (sequelize) => {
     },
     
     // Verification Status
+    isEmailVerified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
     email_verified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false
     },
+    isVerified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
     phone_verified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    documentsVerified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false
     },
@@ -180,6 +206,10 @@ module.exports = (sequelize) => {
     },
     
     // Availability
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    },
     is_available: {
       type: DataTypes.BOOLEAN,
       defaultValue: true
@@ -199,20 +229,58 @@ module.exports = (sequelize) => {
       type: DataTypes.INTEGER,
       defaultValue: 0
     },
+    lockUntil: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
     locked_until: {
       type: DataTypes.DATE,
+      allowNull: true
+    },
+    isLocked: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return !!(this.lockUntil && this.lockUntil > Date.now());
+      }
+    },
+    passwordResetToken: {
+      type: DataTypes.STRING,
       allowNull: true
     },
     password_reset_token: {
       type: DataTypes.STRING,
       allowNull: true
     },
+    passwordResetExpires: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
     password_reset_expires: {
       type: DataTypes.DATE,
       allowNull: true
     },
+    emailVerificationToken: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     email_verification_token: {
       type: DataTypes.STRING,
+      allowNull: true
+    },
+    emailVerificationExpires: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    email_verification_expires: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    refreshToken: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    refresh_token: {
+      type: DataTypes.TEXT,
       allowNull: true
     },
     
@@ -319,6 +387,25 @@ module.exports = (sequelize) => {
       login_attempts: 0,
       locked_until: null
     });
+  };
+  
+  User.prototype.handleFailedLogin = async function() {
+    // If we have a previous lock that has expired, restart at 1
+    if (this.lockUntil && this.lockUntil < Date.now()) {
+      return this.update({
+        loginAttempts: 1,
+        lockUntil: null
+      });
+    }
+    
+    const updates = { loginAttempts: this.loginAttempts + 1 };
+    
+    // Lock account after 5 failed attempts for 2 hours
+    if (this.loginAttempts + 1 >= 5 && !this.isLocked) {
+      updates.lockUntil = Date.now() + 2 * 60 * 60 * 1000; // 2 hours
+    }
+    
+    return this.update(updates);
   };
   
   User.prototype.updateLastLogin = async function() {
