@@ -10,16 +10,11 @@ require('dotenv').config();
 
 // Import database connection and models
 const { sequelize, testConnection, syncDatabase } = require('./models');
+const { connectDB } = require('./config/database');
+const { initializeFirebase } = require('./config/firebase');
 
 // Import routes
-const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/users');
-const serviceRoutes = require('./routes/services');
-const appointmentRoutes = require('./routes/appointments');
-const paymentRoutes = require('./routes/payments');
-const chatRoutes = require('./routes/chat');
-const emergencyRoutes = require('./routes/emergency');
-const adminRoutes = require('./routes/admin');
+const routes = require('./routes');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -90,14 +85,7 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', authenticateToken, userRoutes);
-app.use('/api/services', serviceRoutes);
-app.use('/api/appointments', authenticateToken, appointmentRoutes);
-app.use('/api/payments', authenticateToken, paymentRoutes);
-app.use('/api/chat', authenticateToken, chatRoutes);
-app.use('/api/emergency', authenticateToken, emergencyRoutes);
-app.use('/api/admin', authenticateToken, adminRoutes);
+app.use('/api', routes);
 
 // Socket.IO connection handling
 socketHandler(io);
@@ -121,6 +109,18 @@ const PORT = process.env.PORT || 5000;
 
 async function startServer() {
   try {
+    console.log('🚀 Starting Nakes Link API Server...');
+    console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    
+    // Initialize Firebase
+    console.log('🔥 Initializing Firebase...');
+    await initializeFirebase();
+    console.log('✅ Firebase initialized successfully');
+    
+    // Connect to database
+    console.log('🗄️  Connecting to database...');
+    await connectDB();
+    
     // Test database connection
     await testConnection();
     
@@ -131,15 +131,33 @@ async function startServer() {
       await syncDatabase();
     }
     
+    console.log('✅ Database connected successfully');
+    
     // Start server
     server.listen(PORT, () => {
-      console.log(`🚀 Server berjalan di port ${PORT}`);
-      console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
-      console.log(`📊 Health check: http://localhost:${PORT}/health`);
+      console.log('\n🎉 Server is running successfully!');
+      console.log(`📡 API Server: http://localhost:${PORT}`);
+      console.log(`🔌 Socket.IO Server: ws://localhost:${PORT}`);
+      console.log(`📚 API Documentation: http://localhost:${PORT}/api`);
+      console.log(`🏥 Health Check: http://localhost:${PORT}/health`);
+      
+      console.log('\n📋 Available API Endpoints:');
+      console.log('   • Authentication: /api/auth');
+      console.log('   • Users: /api/users');
+      console.log('   • Services: /api/services');
+      console.log('   • Appointments: /api/appointments');
+      console.log('   • Payments: /api/payments');
+      console.log('   • Wallets: /api/wallets');
+      console.log('   • Medical Records: /api/medical-records');
+      console.log('   • Chats: /api/chats');
+      console.log('   • Notifications: /api/notifications');
+      console.log('   • Reviews: /api/reviews');
+      
+      console.log('\n🎯 Ready to serve requests!');
     });
     
   } catch (error) {
-    console.error('❌ Gagal memulai server:', error);
+    console.error('❌ Failed to start server:', error.message);
     process.exit(1);
   }
 }
