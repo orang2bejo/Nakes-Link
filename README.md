@@ -209,31 +209,80 @@ npm test
 4. Push to branch (`git push origin feature/amazing-feature`)
 5. Open Pull Request
 
-## 📋 Roadmap
+## 📋 Status Pengembangan
 
-### v1.0 (Current)
-- ✅ Basic authentication system
-- ✅ User profiles and verification
-- ✅ Service management
-- ✅ Appointment booking
-- ✅ Payment integration
-- ✅ Chat system
-- ✅ Link management
-- ✅ Todo system
+### ✅ Completed Features
+- **Frontend Dashboard Lengkap**
+  - ✅ Dashboard Pasien (appointments, chat, medical records, payments, wallet)
+  - ✅ Dashboard Nakes (appointments, patients, services, profile, wallet, link manager, todo manager)
+  - ✅ Sistem Autentikasi (login/register untuk pasien dan nakes)
+  - ✅ Chat System dengan UI real-time
+  - ✅ Payment Integration (Midtrans, Xendit, Wallet Management)
+  - ✅ Link Management System
+  - ✅ Todo Management System
+
+- **Backend API Structure**
+  - ✅ Database models (User, Service, Appointment, Payment, Chat, dll)
+  - ✅ API routes untuk semua fitur utama
+  - ✅ Socket.IO untuk real-time communication
+  - ✅ Middleware autentikasi dan error handling
+
+### 🔄 In Progress (High Priority)
+- **SatuSehat Integration** - Verifikasi NIK, STR, dan status keaktifan Nakes
+- **Backend Testing** - Unit tests dan integration tests untuk semua API
+- **Security Implementation** - Enkripsi data sensitif dan audit keamanan
+
+### 📋 Upcoming Tasks
+
+#### High Priority
+- 🔐 **Security & Compliance**
+  - Implementasi enkripsi end-to-end untuk chat dan data medis
+  - Audit keamanan menggunakan OWASP ZAP
+  - Finalisasi kebijakan privasi dan syarat layanan
+
+- 🏥 **Core Integrations**
+  - Integrasi SatuSehat API untuk verifikasi kredensial
+  - Sistem notifikasi (email & SMS)
+  - Dashboard admin untuk verifikasi dan monitoring
+
+#### Medium Priority
+- 🆘 **Emergency Features**
+  - Implementasi tombol SOS dengan integrasi PSC 119
+  - Protokol darurat dan notifikasi
+
+- 🚀 **Deployment & Operations**
+  - Setup production deployment
+  - Monitoring dan backup system
+  - Load testing dan performance optimization
+
+#### Low Priority
+- 👥 **User Experience**
+  - User testing dengan 5-10 pasien & nakes
+  - Feedback collection dan iterasi
+  - Mobile responsiveness improvements
+
+### 🎯 Roadmap
+
+#### v1.0 (MVP - Target: 2-3 bulan)
+- ✅ Core frontend features
 - 🔄 SatuSehat integration
+- 🔄 Security implementation
+- 🔄 Admin dashboard
 - 🔄 Emergency protocols
+- 🔄 Production deployment
 
-### v1.1 (Next)
-- Nakes tiering system
-- Advanced analytics
-- Mobile app (React Native)
+#### v1.1 (Enhancement - Target: +2 bulan)
+- Nakes tiering system (Pratama/Madya/Utama)
 - Video consultation integration
+- Advanced analytics dan reporting
+- Mobile app (React Native)
 
-### v2.0 (Future)
+#### v2.0 (Scale - Target: +6 bulan)
 - Insurance integration (BPJS)
 - AI-powered recommendations
 - Telemedicine features
 - Multi-language support
+- Advanced medical records integration
 
 ## 🤝 Contributing
 

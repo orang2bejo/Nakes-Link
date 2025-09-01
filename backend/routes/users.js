@@ -3,6 +3,15 @@ const { User } = require('../models');
 const { authorize, requireVerifiedNakes } = require('../middleware/auth');
 const { catchAsync } = require('../middleware/errorHandler');
 const { Op } = require('sequelize');
+const userController = require('../controllers/userController');
+const {
+  validateNIK,
+  validateSTR,
+  checkSatuSehatEligibility,
+  rateLimitSatuSehat,
+  logSatuSehatCall,
+  validateSatuSehatConfig
+} = require('../middleware/satuSehat');
 
 const router = express.Router();
 
@@ -236,5 +245,73 @@ router.get('/stats', catchAsync(async (req, res) => {
     data: { stats }
   });
 }));
+
+/**
+ * @route   POST /api/users/satusehat/verify-nik
+ * @desc    Verify NIK with SatuSehat
+ * @access  Private (Nakes only)
+ */
+router.post('/satusehat/verify-nik',
+  authorize(['nakes']),
+  validateSatuSehatConfig,
+  checkSatuSehatEligibility,
+  validateNIK,
+  rateLimitSatuSehat,
+  logSatuSehatCall,
+  catchAsync(async (req, res) => {
+    const result = await userController.verifySatuSehatNIK(req, res);
+    return result;
+  })
+);
+
+/**
+ * @route   POST /api/users/satusehat/verify-str
+ * @desc    Verify STR with SatuSehat
+ * @access  Private (Nakes only)
+ */
+router.post('/satusehat/verify-str',
+  authorize(['nakes']),
+  validateSatuSehatConfig,
+  checkSatuSehatEligibility,
+  validateSTR,
+  rateLimitSatuSehat,
+  logSatuSehatCall,
+  catchAsync(async (req, res) => {
+    const result = await userController.verifySatuSehatSTR(req, res);
+    return result;
+  })
+);
+
+/**
+ * @route   POST /api/users/satusehat/sync
+ * @desc    Sync user data with SatuSehat
+ * @access  Private (Nakes only)
+ */
+router.post('/satusehat/sync',
+  authorize(['nakes']),
+  validateSatuSehatConfig,
+  checkSatuSehatEligibility,
+  rateLimitSatuSehat,
+  logSatuSehatCall,
+  catchAsync(async (req, res) => {
+    const result = await userController.syncWithSatuSehat(req, res);
+    return result;
+  })
+);
+
+/**
+ * @route   GET /api/users/satusehat/status
+ * @desc    Get SatuSehat verification status
+ * @access  Private (Nakes only)
+ */
+router.get('/satusehat/status',
+  authorize(['nakes']),
+  validateSatuSehatConfig,
+  checkSatuSehatEligibility,
+  catchAsync(async (req, res) => {
+    const result = await userController.getSatuSehatStatus(req, res);
+    return result;
+  })
+);
 
 module.exports = router;

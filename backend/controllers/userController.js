@@ -6,6 +6,7 @@ const { Op } = require('sequelize');
 const { uploadToCloudinary } = require('../services/cloudinaryService');
 const { sendNotification } = require('../services/notificationService');
 const { sendEmail } = require('../services/emailService');
+const satuSehatService = require('../services/satuSehatService');
 const crypto = require('crypto');
 
 // Get user profile
@@ -714,6 +715,232 @@ exports.deleteAccount = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Internal server error'
+    });
+  }
+};
+
+// SatuSehat Integration Endpoints
+
+// Verify NIK with SatuSehat
+exports.verifySatuSehatNIK = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation errors',
+        errors: errors.array()
+      });
+    }
+
+    const { nik } = req.body;
+    const userId = req.user.id;
+
+    // Check if user is nakes
+    const user = await User.findByPk(userId);
+    if (!user || user.role !== 'nakes') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only healthcare professionals can verify NIK'
+      });
+    }
+
+    // Verify NIK with SatuSehat
+    const verification = await satuSehatService.verifyNakesByNIK(nik);
+    
+    if (!verification.verified) {
+      return res.status(400).json({
+        success: false,
+        message: verification.message
+      });
+    }
+
+    // Update user with SatuSehat data
+    await user.update({
+      nik: nik,
+      satusehat_id: verification.data.satusehat_id,
+      satusehat_verified: true,
+      satusehat_last_sync: new Date()
+    });
+
+    res.json({
+      success: true,
+      message: 'NIK verified successfully with SatuSehat',
+      data: {
+        satusehat_id: verification.data.satusehat_id,
+        verified: true,
+        practitioner_data: verification.data
+      }
+    });
+
+  } catch (error) {
+    console.error('SatuSehat NIK verification error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to verify NIK with SatuSehat'
+    });
+  }
+};
+
+// Verify STR with SatuSehat
+exports.verifySatuSehatSTR = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation errors',
+        errors: errors.array()
+      });
+    }
+
+    const { str_number } = req.body;
+    const userId = req.user.id;
+
+    const user = await User.findByPk(userId);
+    if (!user || user.role !== 'nakes') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only healthcare professionals can verify STR'
+      });
+    }
+
+    if (!user.satusehat_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please verify NIK first before verifying STR'
+      });
+    }
+
+    // Verify STR with SatuSehat
+    const verification = await satuSehatService.verifySTR(str_number, user.satusehat_id);
+    
+    if (!verification.verified) {
+      return res.status(400).json({
+        success: false,
+        message: verification.message
+      });
+    }
+
+    // Update user with STR data
+    await user.update({
+      str_number: str_number,
+      str_verified: true,
+      str_expiry_date: verification.data.period?.end || null
+    });
+
+    res.json({
+      success: true,
+      message: 'STR verified successfully with SatuSehat',
+      data: {
+        str_number: str_number,
+        verified: true,
+        str_data: verification.data
+      }
+    });
+
+  } catch (error) {
+    console.error('SatuSehat STR verification error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to verify STR with SatuSehat'
+    });
+  }
+};
+
+// Sync user data with SatuSehat
+exports.syncWithSatuSehat = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { nik, str_number } = req.body;
+
+    const user = await User.findByPk(userId);
+    if (!user || user.role !== 'nakes') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only healthcare professionals can sync with SatuSehat'
+      });
+    }
+
+    // Sync with SatuSehat
+    const syncResult = await satuSehatService.syncUserWithSatuSehat(userId, nik, str_number);
+    
+    if (!syncResult.success) {
+      return res.status(400).json({
+        success: false,
+        message: syncResult.message
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Successfully synced with SatuSehat',
+      data: syncResult.data
+    });
+
+  } catch (error) {
+    console.error('SatuSehat sync error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to sync with SatuSehat'
+    });
+  }
+};
+
+// Check SatuSehat verification status
+exports.getSatuSehatStatus = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const user = await User.findByPk(userId, {
+      attributes: [
+        'id', 'satusehat_id', 'satusehat_verified', 'satusehat_last_sync',
+        'nik', 'str_number', 'str_verified', 'str_expiry_date'
+      ]
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    let practitionerStatus = null;
+    if (user.satusehat_id) {
+      try {
+        practitionerStatus = await satuSehatService.checkPractitionerStatus(user.satusehat_id);
+      } catch (error) {
+        console.error('Error checking practitioner status:', error);
+      }
+    }
+
+    res.json({
+      success: true,
+      data: {
+        satusehat_integration: {
+          satusehat_id: user.satusehat_id,
+          verified: user.satusehat_verified,
+          last_sync: user.satusehat_last_sync,
+          practitioner_active: practitionerStatus?.active || null
+        },
+        nik_verification: {
+          nik: user.nik,
+          verified: !!user.satusehat_id
+        },
+        str_verification: {
+          str_number: user.str_number,
+          verified: user.str_verified,
+          expiry_date: user.str_expiry_date
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Get SatuSehat status error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get SatuSehat status'
     });
   }
 };
