@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nakes Link - User Testing Analytics Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px 0;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo h1 {
+            color: #667eea;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .date-filter {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .date-filter input, .date-filter select {
+            padding: 8px 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .card-icon {
+            font-size: 24px;
+        }
+
+        .metric-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .metric-change {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            margin-top: 8px;
+            display: inline-block;
+        }
+
+        .metric-change.positive {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .metric-change.negative {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .chart-container.large {
+            height: 400px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 12px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .feedback-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .feedback-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: background 0.3s ease;
+        }
+
+        .feedback-item:hover {
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .feedback-participant {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .feedback-score {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .feedback-score.excellent {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .feedback-score.good {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .feedback-score.average {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .feedback-score.poor {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .feedback-text {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .alert.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .date-filter {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span style="font-size: 32px;">🏥</span>
+                <div>
+                    <h1>Nakes Link</h1>
+                    <p style="color: #666; font-size: 14px;">User Testing Analytics</p>
+                </div>
+            </div>
+            <div class="date-filter">
+                <input type="date" id="startDate" value="">
+                <span>to</span>
+                <input type="date" id="endDate" value="">
+                <select id="periodSelect">
+                    <option value="7">Last 7 days</option>
+                    <option value="30">Last 30 days</option>
+                    <option value="90">Last 3 months</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+                <button class="btn" onclick="refreshData()">🔄 Refresh</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="loadingIndicator" class="loading">
+            <div class="spinner"></div>
+            <p>Loading analytics data...</p>
+        </div>
+
+        <div id="dashboardContent" style="display: none;">
+            <!-- Key Metrics -->
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Total Participants</h3>
+                        <span class="card-icon">👥</span>
+                    </div>
+                    <div class="metric-value" id="totalParticipants">0</div>
+                    <div class="metric-label">Active participants</div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="patientCount">0</div>
+                            <div class="stat-label">Patients</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="nakesCount">0</div>
+                            <div class="stat-label">Nakes</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Avg Satisfaction</h3>
+                        <span class="card-icon">⭐</span>
+                    </div>
+                    <div class="metric-value" id="avgSatisfaction">0.0</div>
+                    <div class="metric-label">Out of 5.0</div>
+                    <div class="metric-change positive" id="satisfactionChange">+0.0 from last period</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Task Completion</h3>
+                        <span class="card-icon">✅</span>
+                    </div>
+                    <div class="metric-value" id="avgCompletion">0%</div>
+                    <div class="metric-label">Average completion rate</div>
+                    <div class="metric-change positive" id="completionChange">+0% from last period</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">SUS Score</h3>
+                        <span class="card-icon">📊</span>
+                    </div>
+                    <div class="metric-value" id="avgSusScore">0</div>
+                    <div class="metric-label">System Usability Scale</div>
+                    <div class="metric-change" id="susScoreChange">0 from last period</div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Satisfaction Trends</h3>
+                        <span class="card-icon">📈</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="satisfactionChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Completion Rate by Scenario</h3>
+                        <span class="card-icon">📋</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="completionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Analytics -->
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Error Analysis</h3>
+                        <span class="card-icon">🐛</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="errorChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Time to Complete</h3>
+                        <span class="card-icon">⏱️</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="timeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feedback Analysis -->
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recent Feedback</h3>
+                        <span class="card-icon">💬</span>
+                    </div>
+                    <div class="feedback-list" id="recentFeedback">
+                        <!-- Feedback items will be populated here -->
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Issues by Category</h3>
+                        <span class="card-icon">🔍</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="issuesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Options -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Export & Reports</h3>
+                    <span class="card-icon">📄</span>
+                </div>
+                <p style="color: #666; margin-bottom: 15px;">Download detailed reports and raw data for further analysis.</p>
+                <div class="export-buttons">
+                    <button class="btn btn-success" onclick="exportToPDF()">📄 Export PDF Report</button>
+                    <button class="btn btn-secondary" onclick="exportToCSV()">📊 Export CSV Data</button>
+                    <button class="btn" onclick="generateInsights()">🧠 Generate Insights</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let analyticsData = {};
+        let charts = {};
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDateFilters();
+            loadAnalyticsData();
+        });
+
+        function initializeDateFilters() {
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(endDate.getDate() - 7);
+
+            document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+            document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
+
+            document.getElementById('periodSelect').addEventListener('change', function() {
+                const period = this.value;
+                if (period !== 'custom') {
+                    const end = new Date();
+                    const start = new Date();
+                    start.setDate(end.getDate() - parseInt(period));
+                    
+                    document.getElementById('startDate').value = start.toISOString().split('T')[0];
+                    document.getElementById('endDate').value = end.toISOString().split('T')[0];
+                    
+                    loadAnalyticsData();
+                }
+            });
+        }
+
+        async function loadAnalyticsData() {
+            showLoading(true);
+            
+            try {
+                // Simulate API call - replace with actual API endpoint
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Mock data - replace with actual API response
+                analyticsData = generateMockData();
+                
+                updateMetrics();
+                createCharts();
+                updateFeedbackList();
+                
+                showLoading(false);
+            } catch (error) {
+                console.error('Error loading analytics data:', error);
+                showLoading(false);
+                // Show error message
+            }
+        }
+
+        function generateMockData() {
+            // Generate realistic mock data for demonstration
+            const scenarios = ['patient_registration', 'patient_booking', 'patient_consultation', 'patient_emergency', 'nakes_registration', 'nakes_schedule', 'nakes_consultation', 'nakes_emergency'];
+            const participants = [];
+            const feedback = [];
+            
+            // Generate participants
+            for (let i = 0; i < 15; i++) {
+                participants.push({
+                    id: `PT${i.toString().padStart(3, '0')}`,
+                    name: `Participant ${i + 1}`,
+                    type: i < 8 ? 'patient' : 'nakes',
+                    status: 'active'
+                });
+            }
+            
+            // Generate feedback data
+            for (let i = 0; i < 45; i++) {
+                const participant = participants[Math.floor(Math.random() * participants.length)];
+                const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+                
+                feedback.push({
+                    id: i + 1,
+                    participant_id: participant.id,
+                    participant_name: participant.name,
+                    participant_type: participant.type,
+                    scenario_id: scenario,
+                    satisfaction_score: 2 + Math.random() * 3, // 2-5 range
+                    task_completion_rate: 60 + Math.random() * 40, // 60-100% range
+                    time_to_complete: 120 + Math.random() * 300, // 2-7 minutes
+                    error_count: Math.floor(Math.random() * 5),
+                    sus_score: 50 + Math.random() * 40, // 50-90 range
+                    feedback_text: `This is sample feedback for ${scenario}. The user found the interface ${Math.random() > 0.5 ? 'intuitive' : 'confusing'}.`,
+                    submitted_at: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000)
+                });
+            }
+            
+            return {
+                participants,
+                feedback,
+                summary: {
+                    total_participants: participants.length,
+                    patient_count: participants.filter(p => p.type === 'patient').length,
+                    nakes_count: participants.filter(p => p.type === 'nakes').length,
+                    avg_satisfaction: feedback.reduce((sum, f) => sum + f.satisfaction_score, 0) / feedback.length,
+                    avg_completion: feedback.reduce((sum, f) => sum + f.task_completion_rate, 0) / feedback.length,
+                    avg_sus_score: feedback.reduce((sum, f) => sum + f.sus_score, 0) / feedback.length
+                }
+            };
+        }
+
+        function updateMetrics() {
+            const { summary } = analyticsData;
+            
+            document.getElementById('totalParticipants').textContent = summary.total_participants;
+            document.getElementById('patientCount').textContent = summary.patient_count;
+            document.getElementById('nakesCount').textContent = summary.nakes_count;
+            document.getElementById('avgSatisfaction').textContent = summary.avg_satisfaction.toFixed(1);
+            document.getElementById('avgCompletion').textContent = Math.round(summary.avg_completion) + '%';
+            document.getElementById('avgSusScore').textContent = Math.round(summary.avg_sus_score);
+            
+            // Update change indicators (mock data)
+            document.getElementById('satisfactionChange').textContent = '+0.2 from last period';
+            document.getElementById('completionChange').textContent = '+5% from last period';
+            document.getElementById('susScoreChange').textContent = '+3 from last period';
+        }
+
+        function createCharts() {
+            createSatisfactionChart();
+            createCompletionChart();
+            createErrorChart();
+            createTimeChart();
+            createIssuesChart();
+        }
+
+        function createSatisfactionChart() {
+            const ctx = document.getElementById('satisfactionChart').getContext('2d');
+            
+            // Group feedback by date
+            const dailyData = {};
+            analyticsData.feedback.forEach(f => {
+                const date = f.submitted_at.toISOString().split('T')[0];
+                if (!dailyData[date]) {
+                    dailyData[date] = { total: 0, count: 0 };
+                }
+                dailyData[date].total += f.satisfaction_score;
+                dailyData[date].count += 1;
+            });
+            
+            const labels = Object.keys(dailyData).sort();
+            const data = labels.map(date => dailyData[date].total / dailyData[date].count);
+            
+            charts.satisfaction = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels.map(date => new Date(date).toLocaleDateString()),
+                    datasets: [{
+                        label: 'Average Satisfaction',
+                        data: data,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5
+                        }
+                    }
+                }
+            });
+        }
+
+        function createCompletionChart() {
+            const ctx = document.getElementById('completionChart').getContext('2d');
+            
+            // Group by scenario
+            const scenarioData = {};
+            analyticsData.feedback.forEach(f => {
+                if (!scenarioData[f.scenario_id]) {
+                    scenarioData[f.scenario_id] = { total: 0, count: 0 };
+                }
+                scenarioData[f.scenario_id].total += f.task_completion_rate;
+                scenarioData[f.scenario_id].count += 1;
+            });
+            
+            const labels = Object.keys(scenarioData);
+            const data = labels.map(scenario => scenarioData[scenario].total / scenarioData[scenario].count);
+            
+            charts.completion = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels.map(l => l.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())),
+                    datasets: [{
+                        label: 'Completion Rate (%)',
+                        data: data,
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: '#667eea',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        function createErrorChart() {
+            const ctx = document.getElementById('errorChart').getContext('2d');
+            
+            // Count errors by scenario
+            const errorData = {};
+            analyticsData.feedback.forEach(f => {
+                if (!errorData[f.scenario_id]) {
+                    errorData[f.scenario_id] = { total: 0, count: 0 };
+                }
+                errorData[f.scenario_id].total += f.error_count;
+                errorData[f.scenario_id].count += 1;
+            });
+            
+            const labels = Object.keys(errorData);
+            const data = labels.map(scenario => errorData[scenario].total / errorData[scenario].count);
+            
+            charts.errors = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels.map(l => l.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())),
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0',
+                            '#9966FF',
+                            '#FF9F40',
+                            '#FF6384',
+                            '#C9CBCF'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function createTimeChart() {
+            const ctx = document.getElementById('timeChart').getContext('2d');
+            
+            // Average time by scenario
+            const timeData = {};
+            analyticsData.feedback.forEach(f => {
+                if (!timeData[f.scenario_id]) {
+                    timeData[f.scenario_id] = { total: 0, count: 0 };
+                }
+                timeData[f.scenario_id].total += f.time_to_complete;
+                timeData[f.scenario_id].count += 1;
+            });
+            
+            const labels = Object.keys(timeData);
+            const data = labels.map(scenario => (timeData[scenario].total / timeData[scenario].count) / 60); // Convert to minutes
+            
+            charts.time = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels.map(l => l.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())),
+                    datasets: [{
+                        label: 'Average Time (minutes)',
+                        data: data,
+                        backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                        borderColor: '#4BC0C0',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function createIssuesChart() {
+            const ctx = document.getElementById('issuesChart').getContext('2d');
+            
+            // Mock issues data
+            const issuesData = {
+                'Navigation': 15,
+                'Performance': 8,
+                'UI/UX': 12,
+                'Functionality': 6,
+                'Content': 4
+            };
+            
+            charts.issues = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(issuesData),
+                    datasets: [{
+                        data: Object.values(issuesData),
+                        backgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0',
+                            '#9966FF'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function updateFeedbackList() {
+            const container = document.getElementById('recentFeedback');
+            const recentFeedback = analyticsData.feedback
+                .sort((a, b) => b.submitted_at - a.submitted_at)
+                .slice(0, 10);
+            
+            container.innerHTML = recentFeedback.map(feedback => {
+                const scoreClass = feedback.satisfaction_score >= 4 ? 'excellent' : 
+                                 feedback.satisfaction_score >= 3 ? 'good' : 
+                                 feedback.satisfaction_score >= 2 ? 'average' : 'poor';
+                
+                return `
+                    <div class="feedback-item">
+                        <div class="feedback-header">
+                            <span class="feedback-participant">${feedback.participant_name}</span>
+                            <span class="feedback-score ${scoreClass}">${feedback.satisfaction_score.toFixed(1)}/5</span>
+                        </div>
+                        <div class="feedback-text">${feedback.feedback_text}</div>
+                        <div style="font-size: 12px; color: #999; margin-top: 5px;">
+                            ${feedback.scenario_id.replace('_', ' ')} • ${feedback.submitted_at.toLocaleDateString()}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
+            document.getElementById('dashboardContent').style.display = show ? 'none' : 'block';
+        }
+
+        function refreshData() {
+            loadAnalyticsData();
+        }
+
+        function exportToPDF() {
+            // Implement PDF export functionality
+            alert('PDF export functionality would be implemented here');
+        }
+
+        function exportToCSV() {
+            // Implement CSV export functionality
+            const csvData = analyticsData.feedback.map(f => ({
+                participant_id: f.participant_id,
+                participant_name: f.participant_name,
+                participant_type: f.participant_type,
+                scenario_id: f.scenario_id,
+                satisfaction_score: f.satisfaction_score,
+                task_completion_rate: f.task_completion_rate,
+                time_to_complete: f.time_to_complete,
+                error_count: f.error_count,
+                sus_score: f.sus_score,
+                submitted_at: f.submitted_at.toISOString()
+            }));
+            
+            const csv = convertToCSV(csvData);
+            downloadCSV(csv, 'user-testing-data.csv');
+        }
+
+        function convertToCSV(data) {
+            const headers = Object.keys(data[0]);
+            const csvContent = [
+                headers.join(','),
+                ...data.map(row => headers.map(header => row[header]).join(','))
+            ].join('\n');
+            
+            return csvContent;
+        }
+
+        function downloadCSV(csv, filename) {
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', filename);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function generateInsights() {
+            const insights = [
+                `Average satisfaction score is ${analyticsData.summary.avg_satisfaction.toFixed(1)}/5.0`,
+                `Task completion rate is ${analyticsData.summary.avg_completion.toFixed(1)}%`,
+                `SUS score of ${analyticsData.summary.avg_sus_score.toFixed(0)} indicates ${analyticsData.summary.avg_sus_score >= 70 ? 'good' : 'poor'} usability`,
+                `${analyticsData.summary.patient_count} patients and ${analyticsData.summary.nakes_count} healthcare professionals participated`
+            ];
+            
+            alert('Key Insights:\n\n' + insights.join('\n'));
+        }
+    </script>
+</body>
+</html>
