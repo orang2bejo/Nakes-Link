@@ -1,0 +1,201 @@
+{
+  "name": "nakes-link-performance-testing",
+  "version": "1.0.0",
+  "description": "Performance testing suite for Nakes Link telemedicine platform",
+  "main": "test-runner.js",
+  "scripts": {
+    "test": "node test-runner.js sequence",
+    "test:basic": "node test-runner.js test basic",
+    "test:stress": "node test-runner.js test stress",
+    "test:spike": "node test-runner.js test spike",
+    "test:volume": "node test-runner.js test volume",
+    "test:endurance": "node test-runner.js test endurance",
+    "test:sequence": "node test-runner.js sequence",
+    "test:custom": "node test-runner.js sequence basic stress",
+    "monitor:start": "node performance-monitor.js start",
+    "monitor:stop": "node performance-monitor.js stop",
+    "monitor:status": "node performance-monitor.js status",
+    "monitor:dashboard": "node performance-monitor.js dashboard",
+    "monitor:report": "node performance-monitor.js report",
+    "report:generate": "node test-runner.js report",
+    "setup": "npm install && node -e \"console.log('Installing K6... Please run: choco install k6 (Windows) or brew install k6 (macOS)')\"",,
+    "validate:k6": "k6 version",
+    "validate:config": "node -e \"const config = require('./load-testing-config.js'); console.log('Configuration loaded successfully:', config.config.environment.name);\"",
+    "clean": "rimraf results/* reports/* logs/*",
+    "install:k6": "echo 'Please install K6 manually: https://k6.io/docs/getting-started/installation/'",
+    "help": "node -e \"console.log('\\nNakes Link Performance Testing Suite\\n\\nAvailable commands:\\n  npm run test              - Run full test sequence\\n  npm run test:basic        - Run basic load test\\n  npm run test:stress       - Run stress test\\n  npm run test:spike        - Run spike test\\n  npm run test:volume       - Run volume test\\n  npm run test:endurance    - Run endurance test\\n  npm run monitor:start     - Start performance monitoring\\n  npm run monitor:dashboard - Open monitoring dashboard\\n  npm run report:generate   - Generate performance report\\n  npm run validate:k6       - Check K6 installation\\n  npm run help              - Show this help\\n')\""
+  },
+  "keywords": [
+    "performance",
+    "load-testing",
+    "k6",
+    "monitoring",
+    "telemedicine",
+    "healthcare",
+    "api-testing"
+  ],
+  "author": "Nakes Link Development Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.4",
+    "nodemailer": "^6.9.7",
+    "pg": "^8.11.3",
+    "systeminformation": "^5.21.20",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "compression": "^1.7.4",
+    "winston": "^3.11.0",
+    "node-cron": "^3.0.3",
+    "axios": "^1.6.2",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.4",
+    "uuid": "^9.0.1",
+    "joi": "^17.11.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "sharp": "^0.32.6",
+    "node-fetch": "^3.3.2",
+    "csv-parser": "^3.0.0",
+    "csv-writer": "^1.6.0",
+    "pdfkit": "^0.13.0",
+    "html-pdf": "^3.0.1",
+    "cheerio": "^1.0.0-rc.12",
+    "validator": "^13.11.0",
+    "rate-limiter-flexible": "^3.0.8",
+    "redis": "^4.6.10",
+    "ioredis": "^5.3.2"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.5",
+    "nodemon": "^3.0.2",
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "eslint": "^8.54.0",
+    "prettier": "^3.1.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.1.0",
+    "@types/node": "^20.9.4",
+    "typescript": "^5.3.2",
+    "ts-node": "^10.9.1",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/nakes-link.git",
+    "directory": "performance"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/nakes-link/issues"
+  },
+  "homepage": "https://github.com/your-org/nakes-link#readme",
+  "config": {
+    "k6_version": ">=0.45.0",
+    "node_version": ">=16.0.0",
+    "postgres_version": ">=12.0"
+  },
+  "peerDependencies": {
+    "k6": ">=0.45.0"
+  },
+  "optionalDependencies": {
+    "@newrelic/native-metrics": "^10.0.0",
+    "prometheus-api-metrics": "^3.2.2",
+    "elastic-apm-node": "^4.0.0"
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "npm run validate:config"
+    }
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/__tests__/**/*.js",
+      "**/?(*.)+(spec|test).js"
+    ],
+    "collectCoverageFrom": [
+      "*.js",
+      "!test-runner.js",
+      "!k6-load-test.js"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ]
+  },
+  "eslintConfig": {
+    "env": {
+      "node": true,
+      "es2021": true,
+      "jest": true
+    },
+    "extends": [
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "ecmaVersion": 2021,
+      "sourceType": "module"
+    },
+    "rules": {
+      "no-console": "off",
+      "no-unused-vars": "warn",
+      "prefer-const": "error",
+      "no-var": "error"
+    }
+  },
+  "prettier": {
+    "semi": true,
+    "trailingComma": "es5",
+    "singleQuote": true,
+    "printWidth": 100,
+    "tabWidth": 2,
+    "useTabs": false
+  },
+  "nodemonConfig": {
+    "watch": [
+      "*.js",
+      "../config/**/*.js"
+    ],
+    "ignore": [
+      "results/**",
+      "reports/**",
+      "logs/**",
+      "node_modules/**"
+    ],
+    "ext": "js,json",
+    "env": {
+      "NODE_ENV": "development"
+    }
+  },
+  "directories": {
+    "test": "__tests__",
+    "doc": "docs",
+    "lib": "."
+  },
+  "files": [
+    "*.js",
+    "README.md",
+    "package.json",
+    "docs/**",
+    "templates/**"
+  ]
+}
