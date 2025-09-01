@@ -1,9 +1,14 @@
 const twilio = require('twilio');
+const fs = require('fs').promises;
+const path = require('path');
+const { logger, logNotificationEvent } = require('../utils/logger');
+const { addSMSJob } = require('./notificationQueue');
 
 class SMSService {
   constructor() {
     this.client = null;
     this.fromNumber = process.env.TWILIO_PHONE_NUMBER;
+    this.templates = new Map();
     this.initializeTwilio();
   }
 
@@ -13,14 +18,14 @@ class SMSService {
       const authToken = process.env.TWILIO_AUTH_TOKEN;
 
       if (!accountSid || !authToken) {
-        console.warn('Twilio credentials not configured. SMS service will be disabled.');
+        logger.warn('Twilio credentials not configured. SMS service will be disabled.');
         return;
       }
 
       this.client = twilio(accountSid, authToken);
-      console.log('SMS service initialized successfully');
+      logger.info('SMS service initialized successfully');
     } catch (error) {
-      console.error('Error initializing Twilio SMS service:', error);
+      logger.error('Error initializing Twilio SMS service:', error);
     }
   }
 
@@ -38,17 +43,53 @@ class SMSService {
     return '+' + cleaned;
   }
 
+  async loadTemplate(templateName) {
+    try {
+      if (this.templates.has(templateName)) {
+        return this.templates.get(templateName);
+      }
+
+      const templatePath = path.join(__dirname, '../templates/sms', `${templateName}.txt`);
+      const templateContent = await fs.readFile(templatePath, 'utf8');
+      
+      this.templates.set(templateName, templateContent);
+      return templateContent;
+    } catch (error) {
+      logger.error(`Error loading SMS template ${templateName}:`, error);
+      throw new Error(`SMS template ${templateName} not found`);
+    }
+  }
+
+  replaceTemplateVariables(template, data) {
+    let message = template;
+    
+    // Replace all {{variable}} placeholders with actual data
+    Object.keys(data).forEach(key => {
+      const placeholder = new RegExp(`{{${key}}}`, 'g');
+      message = message.replace(placeholder, data[key] || '');
+    });
+    
+    return message;
+  }
+
   async sendSMS(options) {
     try {
       if (!this.client) {
         throw new Error('SMS service not initialized. Please check Twilio configuration.');
       }
 
-      const { to, message, priority = 'normal' } = options;
+      const { to, message, template, data = {}, priority = 'normal' } = options;
+      
+      let finalMessage = message;
+      
+      if (template) {
+        const templateContent = await this.loadTemplate(template);
+        finalMessage = this.replaceTemplateVariables(templateContent, data);
+      }
       const formattedNumber = this.formatPhoneNumber(to);
 
       const messageOptions = {
-        body: message,
+        body: finalMessage,
         from: this.fromNumber,
         to: formattedNumber
       };
@@ -60,10 +101,18 @@ class SMSService {
 
       const result = await this.client.messages.create(messageOptions);
       
-      console.log('SMS sent successfully:', {
+      logger.info('SMS sent successfully:', {
         sid: result.sid,
         to: formattedNumber,
         status: result.status
+      });
+
+      logNotificationEvent('sms_sent', {
+        to: formattedNumber,
+        sid: result.sid,
+        status: result.status,
+        priority,
+        template
       });
 
       return {
@@ -73,7 +122,12 @@ class SMSService {
         to: formattedNumber
       };
     } catch (error) {
-      console.error('Error sending SMS:', error);
+      logger.error('Error sending SMS:', error);
+      logNotificationEvent('sms_failed', {
+        to: options.to,
+        error: error.message,
+        priority
+      });
       throw error;
     }
   }
@@ -204,7 +258,38 @@ class SMSService {
         dateUpdated: message.dateUpdated
       };
     } catch (error) {
-      console.error('Error fetching message status:', error);
+      logger.error('Error fetching message status:', error);
+      throw error;
+    }
+  }
+
+  // Queue SMS for processing
+  async queueSMS(smsOptions, delay = 0) {
+    try {
+      // Add SMS to queue for processing
+      const job = await addSMSJob(smsOptions, {
+        delay: delay * 1000, // Convert seconds to milliseconds
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000
+        }
+      });
+      
+      logger.info('SMS queued for processing:', {
+        jobId: job.id,
+        to: smsOptions.to,
+        template: smsOptions.template,
+        delay
+      });
+      
+      return {
+        success: true,
+        jobId: job.id,
+        queued: true
+      };
+    } catch (error) {
+      logger.error('Error queueing SMS:', error);
       throw error;
     }
   }

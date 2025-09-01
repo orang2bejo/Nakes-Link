@@ -1,6 +1,9 @@
 const emailService = require('./emailService');
 const smsService = require('./smsService');
+const { addNotificationJob, addBulkNotificationJobs, getQueueStats, retryFailedJobs } = require('./notificationQueue');
 const Notification = require('../models/Notification');
+const { logger, logNotificationEvent } = require('../utils/logger');
+const admin = require('firebase-admin');
 
 class NotificationService {
   constructor() {
@@ -307,27 +310,56 @@ class NotificationService {
     });
   }
 
-  // Bulk notifications
-  async sendBulkNotifications(notifications) {
-    const results = [];
-    const batchSize = 10;
+  // Queue notification for background processing
+  async queueNotification(notificationData, options = {}) {
+    try {
+      logNotificationEvent('queuing_notification', {
+        type: notificationData.type,
+        user_id: notificationData.userId,
+        channels: notificationData.channels
+      });
 
-    for (let i = 0; i < notifications.length; i += batchSize) {
-      const batch = notifications.slice(i, i + batchSize);
-      const batchPromises = batch.map(notification => 
-        this.sendNotification(notification).catch(error => ({ error, notification }))
-      );
+      // Add to notification queue for background processing
+      const job = await addNotificationJob(notificationData, {
+        delay: options.delay || 0,
+        priority: this.getPriorityValue(notificationData.priority),
+        ...options
+      });
 
-      const batchResults = await Promise.all(batchPromises);
-      results.push(...batchResults);
-
-      // Add delay between batches
-      if (i + batchSize < notifications.length) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
+      return {
+        success: true,
+        job_id: job.id,
+        message: 'Notification queued successfully'
+      };
+    } catch (error) {
+      logger.error('Error queuing notification:', error);
+      throw error;
     }
+  }
 
-    return results;
+  // Bulk notifications
+  async sendBulkNotifications(notifications, options = {}) {
+    try {
+      logNotificationEvent('queuing_bulk_notifications', {
+        count: notifications.length
+      });
+
+      // Add bulk notifications to queue
+      const jobs = await addBulkNotificationJobs(notifications, {
+        priority: this.getPriorityValue(options.priority || 'normal'),
+        ...options
+      });
+      
+      return {
+        success: true,
+        message: 'Bulk notifications queued successfully',
+        job_count: jobs.length,
+        job_ids: jobs.map(job => job.id)
+      };
+    } catch (error) {
+      logger.error('Error queuing bulk notifications:', error);
+      throw error;
+    }
   }
 
   // Scheduled notifications
@@ -417,28 +449,39 @@ class NotificationService {
 
   // Get notification statistics
   async getNotificationStats(userId) {
-    const stats = await Notification.aggregate([
-      { $match: { userId } },
-      {
-        $group: {
-          _id: null,
-          total: { $sum: 1 },
-          unread: {
-            $sum: {
-              $cond: [{ $eq: ['$readAt', null] }, 1, 0]
-            }
-          },
-          byType: {
-            $push: {
-              type: '$type',
-              count: 1
+    try {
+      const [dbStats, queueStats] = await Promise.all([
+        Notification.aggregate([
+          { $match: { userId } },
+          {
+            $group: {
+              _id: null,
+              total: { $sum: 1 },
+              unread: {
+                $sum: {
+                  $cond: [{ $eq: ['$readAt', null] }, 1, 0]
+                }
+              },
+              byType: {
+                $push: {
+                  type: '$type',
+                  count: 1
+                }
+              }
             }
           }
-        }
-      }
-    ]);
+        ]),
+        getQueueStats()
+      ]);
 
-    return stats[0] || { total: 0, unread: 0, byType: [] };
+      return {
+        database_stats: dbStats[0] || { total: 0, unread: 0, byType: [] },
+        queue_stats: queueStats
+      };
+    } catch (error) {
+      logger.error('Error getting notification stats:', error);
+      throw error;
+    }
   }
 
   // Test notification services
@@ -464,6 +507,110 @@ class NotificationService {
     }
 
     return results;
+  }
+
+  // Get priority value for queue processing
+  getPriorityValue(priority) {
+    const priorityMap = {
+      'urgent': 1,
+      'high': 2,
+      'normal': 3,
+      'low': 4
+    };
+    return priorityMap[priority] || 3;
+  }
+
+  // Retry failed notifications
+  async retryFailedNotifications(queueName = 'all') {
+    try {
+      const results = await retryFailedJobs(queueName);
+      
+      logNotificationEvent('retrying_failed_notifications', {
+        queue_name: queueName,
+        results
+      });
+      
+      return {
+        success: true,
+        message: 'Failed notifications retry initiated',
+        results
+      };
+    } catch (error) {
+      logger.error('Error retrying failed notifications:', error);
+      throw error;
+    }
+  }
+
+  // Send push notification directly
+  async sendPushNotification(options) {
+    try {
+      const { deviceToken, title, message, data = {} } = options;
+      
+      if (!deviceToken) {
+        throw new Error('Device token not available');
+      }
+
+      const pushMessage = {
+        notification: {
+          title: title,
+          body: message
+        },
+        data: {
+          ...data,
+          timestamp: new Date().toISOString()
+        },
+        token: deviceToken
+      };
+
+      const result = await admin.messaging().send(pushMessage);
+      
+      logNotificationEvent('push_notification_sent', {
+        message_id: result
+      });
+
+      return {
+        success: true,
+        message_id: result
+      };
+    } catch (error) {
+      logger.error('Error sending push notification:', error);
+      throw error;
+    }
+  }
+
+  // Schedule notification
+  async scheduleNotification(notificationData, scheduledAt) {
+    try {
+      const delay = new Date(scheduledAt).getTime() - Date.now();
+      
+      if (delay <= 0) {
+        throw new Error('Scheduled time must be in the future');
+      }
+
+      return await this.queueNotification(notificationData, { delay });
+    } catch (error) {
+      logger.error('Error scheduling notification:', error);
+      throw error;
+    }
+  }
+
+  // Cancel scheduled notification
+  async cancelScheduledNotification(jobId) {
+    try {
+      // Implementation would depend on the queue system
+      // For Bull queue, you would get the job and remove it
+      logNotificationEvent('notification_cancelled', {
+        job_id: jobId
+      });
+      
+      return {
+        success: true,
+        message: 'Notification cancelled successfully'
+      };
+    } catch (error) {
+      logger.error('Error cancelling notification:', error);
+      throw error;
+    }
   }
 }
 

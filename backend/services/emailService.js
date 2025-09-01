@@ -2,6 +2,8 @@ const nodemailer = require('nodemailer');
 const fs = require('fs').promises;
 const path = require('path');
 const handlebars = require('handlebars');
+const { logger, logNotificationEvent } = require('../utils/logger');
+const { addEmailJob } = require('./notificationQueue');
 
 class EmailService {
   constructor() {
@@ -30,9 +32,9 @@ class EmailService {
     // Verify connection configuration
     this.transporter.verify((error, success) => {
       if (error) {
-        console.error('Email service configuration error:', error);
+        logger.error('Email service configuration error:', error);
       } else {
-        console.log('Email service is ready to send messages');
+        logger.info('Email service is ready to send messages');
       }
     });
   }
@@ -50,7 +52,7 @@ class EmailService {
       this.templates.set(templateName, compiledTemplate);
       return compiledTemplate;
     } catch (error) {
-      console.error(`Error loading email template ${templateName}:`, error);
+      logger.error(`Error loading email template ${templateName}:`, error);
       throw new Error(`Email template ${templateName} not found`);
     }
   }
@@ -94,10 +96,17 @@ class EmailService {
 
       const result = await this.transporter.sendMail(mailOptions);
       
-      console.log('Email sent successfully:', {
+      logger.info('Email sent successfully:', {
         messageId: result.messageId,
         to,
         subject
+      });
+
+      logNotificationEvent('email_sent', {
+        to,
+        subject,
+        template,
+        messageId: result.messageId
       });
 
       return {
@@ -106,7 +115,13 @@ class EmailService {
         response: result.response
       };
     } catch (error) {
-      console.error('Error sending email:', error);
+      logger.error('Error sending email:', error);
+      logNotificationEvent('email_failed', {
+        to,
+        subject,
+        template,
+        error: error.message
+      });
       throw error;
     }
   }
@@ -223,12 +238,32 @@ class EmailService {
 
   // Email queue management
   async queueEmail(emailOptions, delay = 0) {
-    if (delay > 0) {
-      setTimeout(() => {
-        this.sendEmail(emailOptions);
-      }, delay);
-    } else {
-      return this.sendEmail(emailOptions);
+    try {
+      // Add email to queue for processing
+      const job = await addEmailJob(emailOptions, {
+        delay: delay * 1000, // Convert seconds to milliseconds
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000
+        }
+      });
+      
+      logger.info('Email queued for processing:', {
+        jobId: job.id,
+        to: emailOptions.to,
+        subject: emailOptions.subject,
+        delay
+      });
+      
+      return {
+        success: true,
+        jobId: job.id,
+        queued: true
+      };
+    } catch (error) {
+      logger.error('Error queueing email:', error);
+      throw error;
     }
   }
 

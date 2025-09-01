@@ -14,6 +14,10 @@ const routes = require('./routes');
 // Import middleware
 const { errorHandler, notFound } = require('./middleware/errorHandler');
 const { requestLogger } = require('./middleware/logger');
+const { logger } = require('./utils/logger');
+
+// Import notification queue for initialization
+const notificationQueue = require('./services/notificationQueue');
 
 // Create Express app
 const app = express();
@@ -192,25 +196,43 @@ app.use(notFound);
 app.use(errorHandler);
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received. Shutting down gracefully...');
+process.on('SIGTERM', async () => {
+  logger.info('SIGTERM received. Shutting down gracefully...');
+  
+  try {
+    // Close notification queues gracefully
+    await notificationQueue.close();
+    logger.info('Notification queues closed successfully');
+  } catch (error) {
+    logger.error('Error closing notification queues:', error);
+  }
+  
   process.exit(0);
 });
 
-process.on('SIGINT', () => {
-  console.log('SIGINT received. Shutting down gracefully...');
+process.on('SIGINT', async () => {
+  logger.info('SIGINT received. Shutting down gracefully...');
+  
+  try {
+    // Close notification queues gracefully
+    await notificationQueue.close();
+    logger.info('Notification queues closed successfully');
+  } catch (error) {
+    logger.error('Error closing notification queues:', error);
+  }
+  
   process.exit(0);
 });
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
+  logger.error('Uncaught Exception:', err);
   process.exit(1);
 });
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
   process.exit(1);
 });
 
