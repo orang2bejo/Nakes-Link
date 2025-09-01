@@ -1,0 +1,61 @@
+[Nakes Link] {{notificationTitle}}
+
+{{#if (eq notificationType 'maintenance')}}
+🔧 MAINTENANCE
+{{shortMessage}}
+
+Jadwal: {{maintenanceTime}}
+Durasi: {{estimatedDuration}}
+Layanan terpengaruh: {{affectedServices}}
+
+Info lengkap: {{detailUrl}}
+{{else if (eq notificationType 'emergency')}}
+🚨 SISTEM DARURAT
+{{shortMessage}}
+
+Tindakan: {{actionRequired}}
+Waktu: {{timestamp}}
+
+Update: {{statusUrl}}
+{{else if (eq notificationType 'security')}}
+🔒 KEAMANAN
+{{shortMessage}}
+
+Akun: {{affectedAccount}}
+Waktu: {{timestamp}}
+IP: {{ipAddress}}
+
+Jika bukan Anda, segera hubungi support.
+Bantuan: wa.me/6281112345678
+{{else if (eq notificationType 'update')}}
+🆕 UPDATE SISTEM
+{{shortMessage}}
+
+Fitur baru: {{newFeatures}}
+Versi: {{version}}
+
+Info lengkap: {{updateUrl}}
+{{else if (eq notificationType 'promotion')}}
+🎉 PROMO SPESIAL
+{{shortMessage}}
+
+Diskon: {{discountAmount}}
+Berlaku: {{validUntil}}
+Kode: {{promoCode}}
+
+Gunakan sekarang: {{promoUrl}}
+{{else}}
+📢 INFORMASI
+{{shortMessage}}
+
+{{#if actionRequired}}
+Tindakan: {{actionRequired}}
+{{/if}}
+{{#if deadline}}
+Batas waktu: {{deadline}}
+{{/if}}
+
+Detail: {{detailUrl}}
+{{/if}}
+
+Bantuan: wa.me/6281112345678

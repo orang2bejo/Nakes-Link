@@ -1,0 +1,31 @@
+[Nakes Link] Status Verifikasi
+
+{{#if (eq status 'approved')}}
+✅ DISETUJUI
+Selamat! Akun Nakes Anda telah diverifikasi.
+
+Nomor STR: {{strNumber}}
+Spesialisasi: {{specialization}}
+Status: Aktif
+
+Anda dapat mulai menerima pasien.
+Login: {{loginUrl}}
+{{else if (eq status 'rejected')}}
+❌ DITOLAK
+Maaf, verifikasi Anda belum dapat disetujui.
+
+Alasan: {{rejectionReason}}
+
+Silakan perbaiki dokumen dan ajukan ulang.
+Upload: {{uploadUrl}}
+{{else}}
+⏳ DALAM REVIEW
+Dokumen Anda sedang dalam proses verifikasi.
+
+Estimasi: {{estimatedDays}} hari kerja
+Status: {{currentStage}}
+
+Cek status: {{statusUrl}}
+{{/if}}
+
+Bantuan: wa.me/6281112345678

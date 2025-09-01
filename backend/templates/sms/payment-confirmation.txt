@@ -1,0 +1,17 @@
+[Nakes Link] Pembayaran Berhasil ✅
+
+ID Transaksi: {{transactionId}}
+Jumlah: Rp {{amount}}
+Layanan: {{serviceName}}
+Nakes: {{nakesName}}
+Waktu: {{timestamp}}
+
+{{#if appointmentDate}}
+Jadwal: {{appointmentDate}} {{appointmentTime}}
+{{/if}}
+
+Metode: {{paymentMethod}}
+Status: {{paymentStatus}}
+
+E-receipt: {{receiptUrl}}
+Bantuan: wa.me/6281112345678

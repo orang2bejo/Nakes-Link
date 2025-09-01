@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selamat Datang di Nakes Link</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+        .title {
+            color: #10b981;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #6b7280;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .greeting {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 20px;
+        }
+        .message {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #4b5563;
+            margin-bottom: 25px;
+        }
+        .features {
+            background-color: #f0fdf4;
+            border-left: 4px solid #10b981;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .features h3 {
+            color: #065f46;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .features ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .features li {
+            color: #047857;
+            margin-bottom: 8px;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #10b981;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            margin: 20px 0;
+            transition: background-color 0.3s ease;
+        }
+        .cta-button:hover {
+            background-color: #059669;
+        }
+        .next-steps {
+            background-color: #eff6ff;
+            border: 1px solid #dbeafe;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        .next-steps h3 {
+            color: #1e40af;
+            margin-bottom: 15px;
+        }
+        .next-steps ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .next-steps li {
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        .support {
+            background-color: #fef3c7;
+            border: 1px solid #fcd34d;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        .support h3 {
+            color: #92400e;
+            margin-bottom: 10px;
+        }
+        .support p {
+            color: #78350f;
+            margin-bottom: 15px;
+        }
+        .contact-info {
+            color: #1f2937;
+            font-weight: 600;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+        .footer p {
+            color: #6b7280;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        .social-links {
+            margin: 20px 0;
+        }
+        .social-links a {
+            display: inline-block;
+            margin: 0 10px;
+            color: #10b981;
+            text-decoration: none;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 20px;
+            }
+            .title {
+                font-size: 24px;
+            }
+            .cta-button {
+                display: block;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="{{logoUrl}}" alt="Nakes Link Logo" class="logo">
+            <h1 class="title">Selamat Datang di Nakes Link!</h1>
+            <p class="subtitle">Platform Kesehatan Digital Terpercaya Indonesia</p>
+        </div>
+
+        <div class="content">
+            <p class="greeting">Halo {{name}},</p>
+            
+            <p class="message">
+                Terima kasih telah bergabung dengan Nakes Link! Kami sangat senang menyambut Anda sebagai bagian dari komunitas kesehatan digital terbesar di Indonesia.
+            </p>
+
+            <p class="message">
+                Dengan Nakes Link, Anda kini dapat mengakses layanan kesehatan berkualitas tinggi dengan mudah, cepat, dan terpercaya. Platform kami menghubungkan Anda dengan tenaga kesehatan profesional yang telah terverifikasi.
+            </p>
+
+            <div class="features">
+                <h3>🎉 Apa yang bisa Anda lakukan di Nakes Link:</h3>
+                <ul>
+                    <li><strong>Konsultasi Online:</strong> Chat langsung dengan dokter dan tenaga kesehatan</li>
+                    <li><strong>Janji Temu:</strong> Booking appointment dengan mudah</li>
+                    <li><strong>Rekam Medis Digital:</strong> Akses riwayat kesehatan Anda kapan saja</li>
+                    <li><strong>Layanan Darurat:</strong> Sistem SOS terintegrasi dengan PSC 119</li>
+                    <li><strong>Pembayaran Aman:</strong> Transaksi terlindungi dengan e-wallet</li>
+                    <li><strong>Telemedicine:</strong> Layanan kesehatan jarak jauh yang nyaman</li>
+                </ul>
+            </div>
+
+            <div style="text-align: center;">
+                <a href="{{appUrl}}" class="cta-button">Mulai Eksplorasi Sekarang</a>
+            </div>
+
+            <div class="next-steps">
+                <h3>📋 Langkah Selanjutnya:</h3>
+                <ol>
+                    <li><strong>Lengkapi Profil:</strong> Isi data diri dan informasi kesehatan Anda</li>
+                    <li><strong>Verifikasi Akun:</strong> Konfirmasi email dan nomor telepon Anda</li>
+                    <li><strong>Explore Fitur:</strong> Jelajahi berbagai layanan yang tersedia</li>
+                    <li><strong>Booking Pertama:</strong> Coba konsultasi atau janji temu pertama Anda</li>
+                </ol>
+            </div>
+
+            {{#if isNakes}}
+            <div class="features">
+                <h3>👩‍⚕️ Khusus untuk Tenaga Kesehatan:</h3>
+                <ul>
+                    <li><strong>Verifikasi Profesi:</strong> Upload STR dan dokumen kredensial Anda</li>
+                    <li><strong>Kelola Jadwal:</strong> Atur ketersediaan dan slot konsultasi</li>
+                    <li><strong>Dashboard Nakes:</strong> Monitor pasien dan riwayat layanan</li>
+                    <li><strong>Earning Tracker:</strong> Pantau pendapatan dari layanan Anda</li>
+                </ul>
+            </div>
+            {{/if}}
+
+            <div class="support">
+                <h3>🤝 Butuh Bantuan?</h3>
+                <p>Tim support kami siap membantu Anda 24/7</p>
+                <div class="contact-info">
+                    <p>📧 Email: support@nakeslink.com</p>
+                    <p>📱 WhatsApp: +62 811-1234-5678</p>
+                    <p>☎️ Call Center: 1500-NAKES (62537)</p>
+                </div>
+            </div>
+
+            <p class="message">
+                Sekali lagi, selamat datang di Nakes Link! Mari bersama-sama membangun ekosistem kesehatan digital yang lebih baik untuk Indonesia.
+            </p>
+
+            <p class="message">
+                Salam sehat,<br>
+                <strong>Tim Nakes Link</strong>
+            </p>
+        </div>
+
+        <div class="footer">
+            <div class="social-links">
+                <a href="{{facebookUrl}}">Facebook</a>
+                <a href="{{instagramUrl}}">Instagram</a>
+                <a href="{{twitterUrl}}">Twitter</a>
+                <a href="{{linkedinUrl}}">LinkedIn</a>
+            </div>
+            
+            <p>© 2024 Nakes Link. Semua hak dilindungi.</p>
+            <p>Jl. Kesehatan Digital No. 123, Jakarta 12345, Indonesia</p>
+            <p>
+                <a href="{{unsubscribeUrl}}" style="color: #6b7280; text-decoration: none;">Berhenti berlangganan</a> | 
+                <a href="{{privacyUrl}}" style="color: #6b7280; text-decoration: none;">Kebijakan Privasi</a> | 
+                <a href="{{termsUrl}}" style="color: #6b7280; text-decoration: none;">Syarat & Ketentuan</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

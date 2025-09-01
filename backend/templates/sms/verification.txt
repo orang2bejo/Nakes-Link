@@ -1,0 +1,10 @@
+[Nakes Link] Kode verifikasi Anda: {{verificationCode}}
+
+Gunakan kode ini untuk verifikasi akun dalam {{expiryMinutes}} menit.
+
+Jangan bagikan kode ini kepada siapa pun.
+
+Info: {{email}}
+Waktu: {{timestamp}}
+
+Bantuan: wa.me/6281112345678

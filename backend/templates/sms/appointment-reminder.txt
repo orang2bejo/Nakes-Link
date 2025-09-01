@@ -1,0 +1,15 @@
+[Nakes Link] Pengingat Appointment
+
+📅 {{appointmentDate}} pukul {{appointmentTime}}
+👨‍⚕️ {{nakesName}} - {{specialization}}
+📍 {{serviceType}}
+💰 Rp {{totalAmount}}
+
+{{#if isOnline}}
+Link konsultasi akan dikirim 15 menit sebelum jadwal.
+{{else}}
+Alamat: {{address}}
+{{/if}}
+
+Reschedule: {{rescheduleUrl}}
+Bantuan: wa.me/6281112345678

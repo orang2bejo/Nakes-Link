@@ -1,0 +1,19 @@
+🚨 [EMERGENCY ALERT] 🚨
+
+ID: {{emergencyId}}
+Pasien: {{patientName}}
+Kondisi: {{emergencyType}}
+Lokasi: {{location}}
+Waktu: {{timestamp}}
+
+{{#if assignedNakes}}
+Nakes: {{assignedNakes}}
+Status: {{responseStatus}}
+{{else}}
+Menunggu respons Nakes terdekat...
+{{/if}}
+
+Kontak Darurat: {{emergencyContact}}
+PSC 119: 119
+
+Tracking: {{trackingUrl}}

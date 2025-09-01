@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{notificationTitle}} - Nakes Link</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            width: 100px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+        .title {
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .title.info {
+            color: #3b82f6;
+        }
+        .title.warning {
+            color: #f59e0b;
+        }
+        .title.error {
+            color: #dc2626;
+        }
+        .title.success {
+            color: #10b981;
+        }
+        .title.maintenance {
+            color: #8b5cf6;
+        }
+        .subtitle {
+            color: #6b7280;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+        .notification-card {
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .notification-card.info {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+        .notification-card.warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        .notification-card.error {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        }
+        .notification-card.success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        .notification-card.maintenance {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+        .notification-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 20px,
+                rgba(255,255,255,0.1) 20px,
+                rgba(255,255,255,0.1) 40px
+            );
+        }
+        .notification-content {
+            position: relative;
+            z-index: 1;
+        }
+        .notification-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        .notification-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .notification-message {
+            font-size: 18px;
+            line-height: 1.5;
+            opacity: 0.95;
+        }
+        .priority-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 20px;
+        }
+        .priority-high {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .priority-medium {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        .priority-low {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        .content-section {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        .content-section h3 {
+            color: #374151;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+        .content-section h3::before {
+            content: '📄';
+            margin-right: 10px;
+            font-size: 20px;
+        }
+        .content-section p {
+            color: #4b5563;
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .detail-item {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .detail-label {
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+        .detail-value {
+            color: #1f2937;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .maintenance-schedule {
+            background-color: #faf5ff;
+            border: 2px solid #c084fc;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        .maintenance-schedule h3 {
+            color: #7c3aed;
+            margin-bottom: 20px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+        .maintenance-schedule h3::before {
+            content: '🔧';
+            margin-right: 10px;
+            font-size: 20px;
+        }
+        .schedule-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 12px;
+            background-color: rgba(139, 92, 246, 0.1);
+            border-radius: 8px;
+        }
+        .schedule-time {
+            background-color: #8b5cf6;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 15px;
+            min-width: 120px;
+            text-align: center;
+        }
+        .schedule-event {
+            color: #6b21a8;
+            font-weight: 500;
+        }
+        .impact-section {
+            background-color: #fef3c7;
+            border: 1px solid #fcd34d;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        .impact-section h3 {
+            color: #92400e;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .impact-section h3::before {
+            content: '⚠️';
+            margin-right: 10px;
+            font-size: 20px;
+        }
+        .impact-section ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .impact-section li {
+            color: #78350f;
+            margin-bottom: 8px;
+        }
+        .action-required {
+            background-color: #fef2f2;
+            border: 2px solid #dc2626;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        .action-required h3 {
+            color: #dc2626;
+            margin-bottom: 20px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+        .action-required h3::before {
+            content: '🚨';
+            margin-right: 10px;
+            font-size: 20px;
+        }
+        .action-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .action-item {
+            display: flex;
+            align-items: flex-start;
+            margin: 12px 0;
+            padding: 12px;
+            background-color: rgba(220, 38, 38, 0.1);
+            border-radius: 8px;
+        }
+        .action-number {
+            background-color: #dc2626;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .action-text {
+            color: #991b1b;
+            font-weight: 500;
+        }
+        .update-section {
+            background-color: #ecfdf5;
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        .update-section h3 {
+            color: #065f46;
+            margin-bottom: 20px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+        .update-section h3::before {
+            content: '🆕';
+            margin-right: 10px;
+            font-size: 20px;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: rgba(16, 185, 129, 0.1);
+            border-radius: 6px;
+        }
+        .feature-icon {
+            color: #10b981;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        .feature-text {
+            color: #047857;
+            font-weight: 500;
+        }
+        .action-buttons {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .action-button {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 5px 10px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background-color: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+        .btn-secondary:hover {
+            background-color: #e5e7eb;
+        }
+        .contact-info {
+            background-color: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        .contact-info h3 {
+            color: #1e40af;
+            margin-bottom: 15px;
+        }
+        .contact-info p {
+            color: #1f2937;
+            margin: 5px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+        .footer p {
+            color: #6b7280;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 20px;
+            }
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+            .schedule-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .schedule-time {
+                margin-bottom: 8px;
+                margin-right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="{{logoUrl}}" alt="Nakes Link Logo" class="logo">
+            <h1 class="title {{notificationType}}">{{notificationTitle}}</h1>
+            <p class="subtitle">{{notificationSubtitle}}</p>
+            {{#if priority}}
+            <span class="priority-badge priority-{{priority}}">{{priorityText}} Priority</span>
+            {{/if}}
+        </div>
+
+        <div class="notification-card {{notificationType}}">
+            <div class="notification-content">
+                {{#if (eq notificationType 'info')}}
+                <div class="notification-icon">ℹ️</div>
+                {{else if (eq notificationType 'warning')}}
+                <div class="notification-icon">⚠️</div>
+                {{else if (eq notificationType 'error')}}
+                <div class="notification-icon">❌</div>
+                {{else if (eq notificationType 'success')}}
+                <div class="notification-icon">✅</div>
+                {{else if (eq notificationType 'maintenance')}}
+                <div class="notification-icon">🔧</div>
+                {{else}}
+                <div class="notification-icon">📢</div>
+                {{/if}}
+                <div class="notification-title">{{notificationTitle}}</div>
+                <div class="notification-message">{{shortMessage}}</div>
+            </div>
+        </div>
+
+        {{#if detailedMessage}}
+        <div class="content-section">
+            <h3>Detail Informasi</h3>
+            <p>{{detailedMessage}}</p>
+        </div>
+        {{/if}}
+
+        {{#if details}}
+        <div class="details-grid">
+            {{#each details}}
+            <div class="detail-item">
+                <div class="detail-label">{{this.label}}</div>
+                <div class="detail-value">{{this.value}}</div>
+            </div>
+            {{/each}}
+        </div>
+        {{/if}}
+
+        {{#if (eq notificationType 'maintenance')}}
+        {{#if maintenanceSchedule}}
+        <div class="maintenance-schedule">
+            <h3>Jadwal Maintenance</h3>
+            {{#each maintenanceSchedule}}
+            <div class="schedule-item">
+                <div class="schedule-time">{{this.time}}</div>
+                <div class="schedule-event">{{this.event}}</div>
+            </div>
+            {{/each}}
+        </div>
+        {{/if}}
+
+        {{#if impactedServices}}
+        <div class="impact-section">
+            <h3>Layanan yang Terpengaruh</h3>
+            <ul>
+                {{#each impactedServices}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
+        </div>
+        {{/if}}
+        {{/if}}
+
+        {{#if (eq notificationType 'error')}}
+        {{#if actionRequired}}
+        <div class="action-required">
+            <h3>Tindakan yang Diperlukan</h3>
+            <ul class="action-list">
+                {{#each actionRequired}}
+                <li class="action-item">
+                    <div class="action-number">{{@index}}</div>
+                    <div class="action-text">{{this}}</div>
+                </li>
+                {{/each}}
+            </ul>
+        </div>
+        {{/if}}
+        {{/if}}
+
+        {{#if (eq notificationType 'success')}}
+        {{#if newFeatures}}
+        <div class="update-section">
+            <h3>Fitur Baru</h3>
+            <ul class="feature-list">
+                {{#each newFeatures}}
+                <li class="feature-item">
+                    <span class="feature-icon">✨</span>
+                    <span class="feature-text">{{this}}</span>
+                </li>
+                {{/each}}
+            </ul>
+        </div>
+        {{/if}}
+        {{/if}}
+
+        {{#if actionButtons}}
+        <div class="action-buttons">
+            {{#each actionButtons}}
+            <a href="{{this.url}}" class="action-button {{this.type}}">{{this.icon}} {{this.text}}</a>
+            {{/each}}
+        </div>
+        {{/if}}
+
+        {{#if additionalInfo}}
+        <div style="background-color: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 20px; margin: 25px 0;">
+            <h3 style="color: #1e40af; margin-bottom: 15px;">📋 Informasi Tambahan</h3>
+            <div style="color: #1f2937; line-height: 1.6;">
+                {{additionalInfo}}
+            </div>
+        </div>
+        {{/if}}
+
+        {{#if faqSection}}
+        <div style="background-color: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 20px; margin: 25px 0;">
+            <h3 style="color: #92400e; margin-bottom: 15px;">❓ Pertanyaan yang Sering Diajukan</h3>
+            {{#each faqSection}}
+            <div style="margin: 15px 0; padding: 10px; background-color: rgba(245, 158, 11, 0.1); border-radius: 6px;">
+                <strong style="color: #78350f;">Q: {{this.question}}</strong><br>
+                <span style="color: #92400e;">A: {{this.answer}}</span>
+            </div>
+            {{/each}}
+        </div>
+        {{/if}}
+
+        <div class="contact-info">
+            <h3>📞 Butuh Bantuan?</h3>
+            <p>Tim support kami siap membantu Anda 24/7</p>
+            <p><strong>Email:</strong> support@nakeslink.com</p>
+            <p><strong>WhatsApp:</strong> +62 811-1234-5678</p>
+            <p><strong>Hotline:</strong> 1500-NAKES (24/7)</p>
+        </div>
+
+        {{#if followUpDate}}
+        <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 15px; margin: 20px 0; text-align: center;">
+            <p style="color: #065f46; margin: 0; font-weight: 600;">📅 Update selanjutnya akan dikirim pada: {{followUpDate}}</p>
+        </div>
+        {{/if}}
+
+        <p style="font-size: 16px; color: #4b5563; margin: 25px 0;">
+            {{#if (eq notificationType 'maintenance')}}
+            Terima kasih atas pengertian Anda selama periode maintenance. 
+            Kami berkomitmen untuk memberikan layanan terbaik.
+            {{else if (eq notificationType 'error')}}
+            Kami mohon maaf atas ketidaknyamanan yang terjadi. 
+            Tim teknis kami sedang bekerja keras untuk menyelesaikan masalah ini.
+            {{else if (eq notificationType 'success')}}
+            Terima kasih telah menjadi bagian dari komunitas Nakes Link. 
+            Kami terus berinovasi untuk memberikan pengalaman terbaik.
+            {{else}}
+            Terima kasih atas perhatian Anda terhadap informasi ini. 
+            Jangan ragu untuk menghubungi kami jika ada pertanyaan.
+            {{/if}}
+        </p>
+
+        <p style="font-size: 16px; color: #4b5563;">
+            Salam,<br>
+            <strong>Tim Nakes Link</strong>
+        </p>
+
+        <div class="footer">
+            <p>© 2024 Nakes Link. Semua hak dilindungi.</p>
+            <p>Email notifikasi sistem - {{notificationId}}</p>
+            <p>
+                <a href="{{unsubscribeUrl}}" style="color: #6b7280; text-decoration: none;">Kelola Notifikasi</a> | 
+                <a href="{{statusPageUrl}}" style="color: #6b7280; text-decoration: none;">Status Sistem</a> | 
+                <a href="{{privacyUrl}}" style="color: #6b7280; text-decoration: none;">Kebijakan Privasi</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
