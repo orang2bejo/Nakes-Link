@@ -43,7 +43,8 @@ import {
   HealthAndSafety as HealthAndSafetyIcon,
   MonetizationOn as MonetizationOnIcon,
   Analytics as AnalyticsIcon,
-  Support as SupportIcon
+  Support as SupportIcon,
+  Emergency as EmergencyIcon
 } from '@mui/icons-material';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -171,6 +172,11 @@ const AdminLayout = () => {
         { title: 'Revenue Reports', path: '/admin/reports/revenue' },
         { title: 'Service Analytics', path: '/admin/reports/services' }
       ]
+    },
+    {
+      title: 'Emergency Monitoring',
+      icon: <EmergencyIcon />,
+      path: '/admin/emergency'
     },
     {
       title: 'Security',

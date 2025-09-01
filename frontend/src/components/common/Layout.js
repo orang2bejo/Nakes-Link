@@ -32,6 +32,7 @@ import {
   Assignment,
   Search,
   People,
+  Emergency,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
@@ -129,6 +130,11 @@ const Layout = ({ children }) => {
           path: '/medical-records',
         },
         {
+          text: 'Emergency',
+          icon: <Emergency />,
+          path: '/emergency',
+        },
+        {
           text: 'Pembayaran',
           icon: <Payment />,
           path: '/payments',
@@ -163,6 +169,11 @@ const Layout = ({ children }) => {
           text: 'Pasien',
           icon: <People />,
           path: '/patients',
+        },
+        {
+          text: 'Emergency Response',
+          icon: <Emergency />,
+          path: '/emergency',
         },
         {
           text: 'Dompet',

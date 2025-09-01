@@ -12,6 +12,8 @@ const medicalRecordRoutes = require('./medicalRecords');
 const chatRoutes = require('./chats');
 const notificationRoutes = require('./notifications');
 const reviewRoutes = require('./reviews');
+const emergencyRoutes = require('./emergency');
+const adminRoutes = require('./admin');
 
 // API routes
 router.use('/auth', authRoutes);
@@ -24,6 +26,8 @@ router.use('/medical-records', medicalRecordRoutes);
 router.use('/chats', chatRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/reviews', reviewRoutes);
+router.use('/emergency', emergencyRoutes);
+router.use('/admin', adminRoutes);
 
 // Health check endpoint
 router.get('/health', (req, res) => {
@@ -51,7 +55,8 @@ router.get('/', (req, res) => {
       medical_records: '/api/medical-records',
       chats: '/api/chats',
       notifications: '/api/notifications',
-      reviews: '/api/reviews'
+      reviews: '/api/reviews',
+      admin: '/api/admin'
     },
     documentation: process.env.API_DOCS_URL || '/docs'
   });

@@ -351,6 +351,44 @@ export const adminAPI = {
   bulkPaymentAction: (data) => api.post('/admin/payments/bulk-action', data),
 };
 
+// Emergency API
+export const emergencyAPI = {
+  // Create emergency
+  createEmergency: (data) => api.post('/emergency', data),
+  
+  // Get emergencies
+  getEmergencies: (params) => api.get('/emergency', { params }),
+  getEmergencyById: (id) => api.get(`/emergency/${id}`),
+  getActiveEmergencies: (params) => api.get('/emergency/active', { params }),
+  getAllEmergencies: (params) => api.get('/emergency/all', { params }),
+  
+  // Update emergency
+  updateEmergency: (id, data) => api.put(`/emergency/${id}`, data),
+  updateEmergencyStatus: (id, status, notes) => api.patch(`/emergency/${id}/status`, { status, notes }),
+  
+  // Emergency responses
+  respondToEmergency: (id, data) => api.post(`/emergency/${id}/respond`, data),
+  getEmergencyResponses: (id) => api.get(`/emergency/${id}/responses`),
+  
+  // Statistics and analytics
+  getStatistics: (dateRange) => api.get('/emergency/statistics', { params: { dateRange } }),
+  getResponseTimeAnalytics: (dateRange) => api.get('/emergency/analytics/response-time', { params: { dateRange } }),
+  getEmergencyTrends: (dateRange) => api.get('/emergency/analytics/trends', { params: { dateRange } }),
+  
+  // PSC 119 integration
+  syncWithPSC119: (id) => api.post(`/emergency/${id}/psc119/sync`),
+  getPSC119Status: (ticketId) => api.get(`/emergency/psc119/${ticketId}/status`),
+  
+  // Location and mapping
+  getNearbyProviders: (latitude, longitude, radius) => api.get('/emergency/nearby-providers', {
+    params: { latitude, longitude, radius }
+  }),
+  
+  // Emergency types and configuration
+  getEmergencyTypes: () => api.get('/emergency/types'),
+  updateEmergencyTypes: (data) => api.put('/emergency/types', data),
+};
+
 // File upload helper
 export const uploadFile = async (file, endpoint, onProgress) => {
   const formData = new FormData();

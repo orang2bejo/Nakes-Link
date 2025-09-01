@@ -30,6 +30,10 @@ import NakesAppointments from './pages/nakes/Appointments';
 import NakesWallet from './pages/nakes/Wallet';
 import NakesChat from './pages/nakes/Chat';
 import NakesPatients from './pages/nakes/Patients';
+import EmergencyResponse from './pages/nakes/EmergencyResponse';
+
+// Patient Emergency
+import Emergency from './pages/patient/Emergency';
 
 // Admin Components
 import AdminLayout from './layouts/AdminLayout';
@@ -41,6 +45,7 @@ import ServiceManagement from './pages/admin/ServiceManagement';
 import ReportsAnalytics from './pages/admin/ReportsAnalytics';
 import SecurityMonitoring from './pages/admin/SecurityMonitoring';
 import SystemSettings from './pages/admin/SystemSettings';
+import EmergencyMonitoring from './pages/admin/EmergencyMonitoring';
 
 // Common Components
 import Layout from './components/common/Layout';
@@ -157,6 +162,7 @@ function App() {
                           <Route path="/chat" element={<PatientChat />} />
                           <Route path="/search" element={<SearchServices />} />
                           <Route path="/book/:serviceId" element={<BookAppointment />} />
+                          <Route path="/emergency" element={<Emergency />} />
                           <Route path="/" element={<Navigate to="/dashboard" replace />} />
                         </>
                       )}
@@ -171,6 +177,7 @@ function App() {
                           <Route path="/wallet" element={<NakesWallet />} />
                           <Route path="/chat" element={<NakesChat />} />
                           <Route path="/patients" element={<NakesPatients />} />
+                          <Route path="/emergency" element={<EmergencyResponse />} />
                           <Route path="/" element={<Navigate to="/dashboard" replace />} />
                         </>
                       )}
@@ -204,6 +211,7 @@ function App() {
                       <Route path="/payments" element={<PaymentManagement />} />
                       <Route path="/services" element={<ServiceManagement />} />
                       <Route path="/reports" element={<ReportsAnalytics />} />
+                      <Route path="/emergency" element={<EmergencyMonitoring />} />
                       <Route path="/security/monitor" element={<SecurityMonitoring />} />
                       <Route path="/settings/general" element={<SystemSettings />} />
                       <Route path="/settings/health" element={<SystemSettings />} />
