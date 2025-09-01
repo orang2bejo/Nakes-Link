@@ -31,6 +31,17 @@ import NakesWallet from './pages/nakes/Wallet';
 import NakesChat from './pages/nakes/Chat';
 import NakesPatients from './pages/nakes/Patients';
 
+// Admin Components
+import AdminLayout from './layouts/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import UserManagement from './pages/admin/UserManagement';
+import NakesVerification from './pages/admin/NakesVerification';
+import PaymentManagement from './pages/admin/PaymentManagement';
+import ServiceManagement from './pages/admin/ServiceManagement';
+import ReportsAnalytics from './pages/admin/ReportsAnalytics';
+import SecurityMonitoring from './pages/admin/SecurityMonitoring';
+import SystemSettings from './pages/admin/SystemSettings';
+
 // Common Components
 import Layout from './components/common/Layout';
 import ProtectedRoute from './components/common/ProtectedRoute';
@@ -169,7 +180,7 @@ function App() {
                         path="/*"
                         element={
                           <Navigate
-                            to={user?.role === 'patient' ? '/dashboard' : '/dashboard'}
+                            to={user?.role === 'patient' ? '/dashboard' : user?.role === 'admin' ? '/admin/dashboard' : '/dashboard'}
                             replace
                           />
                         }
@@ -179,6 +190,29 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            
+            {/* Admin Routes */}
+            <Route
+              path="/admin/*"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminLayout>
+                    <Routes>
+                      <Route path="/dashboard" element={<AdminDashboard />} />
+                      <Route path="/users" element={<UserManagement />} />
+                      <Route path="/nakes-verification" element={<NakesVerification />} />
+                      <Route path="/payments" element={<PaymentManagement />} />
+                      <Route path="/services" element={<ServiceManagement />} />
+                      <Route path="/reports" element={<ReportsAnalytics />} />
+                      <Route path="/security/monitor" element={<SecurityMonitoring />} />
+                      <Route path="/settings/general" element={<SystemSettings />} />
+                      <Route path="/settings/health" element={<SystemSettings />} />
+                      <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+                     </Routes>
+                   </AdminLayout>
+                 </ProtectedRoute>
+               }
+             />
           </Routes>
         </ErrorBoundary>
       </LocalizationProvider>

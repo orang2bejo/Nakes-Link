@@ -275,19 +275,80 @@ export const reviewsAPI = {
 
 // Admin API
 export const adminAPI = {
+  // Dashboard
   getDashboard: () => api.get('/admin/dashboard'),
+  getDashboardStats: () => api.get('/admin/dashboard/stats'),
+  getDashboardCharts: (params) => api.get('/admin/dashboard/charts', { params }),
+  getRecentActivities: (params) => api.get('/admin/dashboard/activities', { params }),
+
+  // User Management
   getUsers: (params) => api.get('/admin/users', { params }),
+  getUserDetails: (userId) => api.get(`/admin/users/${userId}`),
+  verifyUser: (userId, data) => api.put(`/admin/users/${userId}/verify`, data),
+  suspendUser: (userId, data) => api.put(`/admin/users/${userId}/suspend`, data),
   updateUserStatus: (userId, status) => api.put(`/admin/users/${userId}/status`, { status }),
-  getServices: (params) => api.get('/admin/services', { params }),
-  updateServiceStatus: (serviceId, status) => api.put(`/admin/services/${serviceId}/status`, { status }),
-  getAppointments: (params) => api.get('/admin/appointments', { params }),
+
+  // Nakes Verification
+  getNakesVerifications: (params) => api.get('/admin/nakes/verifications', { params }),
+  verifyNakes: (applicationId, data) => api.put(`/admin/nakes/verifications/${applicationId}`, data),
+  getNakesDetails: (applicationId) => api.get(`/admin/nakes/verifications/${applicationId}`),
+
+  // Payment Management
   getPayments: (params) => api.get('/admin/payments', { params }),
+  getPaymentDetails: (paymentId) => api.get(`/admin/payments/${paymentId}`),
+  getPaymentStats: () => api.get('/admin/payments/stats'),
+  refundPayment: (paymentId, data) => api.post(`/admin/payments/${paymentId}/refund`, data),
+
+  // Service Management
+  getServices: (params) => api.get('/admin/services', { params }),
+  getServiceDetails: (serviceId) => api.get(`/admin/services/${serviceId}`),
+  updateServiceStatus: (serviceId, data) => api.put(`/admin/services/${serviceId}/status`, data),
+  approveService: (serviceId, data) => api.put(`/admin/services/${serviceId}/approve`, data),
+  rejectService: (serviceId, data) => api.put(`/admin/services/${serviceId}/reject`, data),
+
+  // Appointment Management
+  getAppointments: (params) => api.get('/admin/appointments', { params }),
+  getAppointmentDetails: (appointmentId) => api.get(`/admin/appointments/${appointmentId}`),
+
+  // Content Management
   getReviews: (params) => api.get('/admin/reviews', { params }),
   moderateReview: (reviewId, action, reason) => api.put(`/admin/reviews/${reviewId}/moderate`, { action, reason }),
   getReports: (params) => api.get('/admin/reports', { params }),
+  moderateContent: (contentId, data) => api.put(`/admin/content/${contentId}/moderate`, data),
+
+  // Reports & Analytics
   getAnalytics: (params) => api.get('/admin/analytics', { params }),
+  getUserReports: (params) => api.get('/admin/reports/users', { params }),
+  getRevenueReports: (params) => api.get('/admin/reports/revenue', { params }),
+  getServiceReports: (params) => api.get('/admin/reports/services', { params }),
+  exportReport: (type, params) => api.get(`/admin/reports/export/${type}`, { params, responseType: 'blob' }),
+
+  // Security & Monitoring
+  getSecurityLogs: (params) => api.get('/admin/security/logs', { params }),
+  getAuditLogs: (params) => api.get('/admin/security/audit', { params }),
+  getSecurityStats: () => api.get('/admin/security/stats'),
+  blockIP: (ip, data) => api.post('/admin/security/block-ip', { ip, ...data }),
+  unblockIP: (ip) => api.delete(`/admin/security/block-ip/${ip}`),
+
+  // System Settings
   getSettings: () => api.get('/admin/settings'),
   updateSettings: (data) => api.put('/admin/settings', data),
+  getSystemHealth: () => api.get('/admin/system/health'),
+  getSystemLogs: (params) => api.get('/admin/system/logs', { params }),
+  backupDatabase: () => api.post('/admin/system/backup'),
+  getBackups: () => api.get('/admin/system/backups'),
+  restoreBackup: (backupId) => api.post(`/admin/system/restore/${backupId}`),
+
+  // Notifications
+  getNotifications: (params) => api.get('/admin/notifications', { params }),
+  sendNotification: (data) => api.post('/admin/notifications/send', data),
+  markNotificationRead: (notificationId) => api.put(`/admin/notifications/${notificationId}/read`),
+  deleteNotification: (notificationId) => api.delete(`/admin/notifications/${notificationId}`),
+
+  // Bulk Operations
+  bulkUserAction: (data) => api.post('/admin/users/bulk-action', data),
+  bulkServiceAction: (data) => api.post('/admin/services/bulk-action', data),
+  bulkPaymentAction: (data) => api.post('/admin/payments/bulk-action', data),
 };
 
 // File upload helper
